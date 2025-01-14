@@ -7,9 +7,11 @@ import {
   Image,
   Input,
   SimpleGrid,
+  Text,
 } from "@chakra-ui/react";
 import { Alchemy, Network, Utils } from "alchemy-sdk";
-import { useState, Suspense } from "react";
+import { ethers } from "ethers";
+import { useState, useEffect } from "react";
 import Loading from "./components/loading.jsx";
 import { Spinner } from "@chakra-ui/react/spinner";
 import { Separator } from "@chakra-ui/react/separator";
@@ -20,6 +22,54 @@ function App() {
   const [hasQueried, setHasQueried] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
   const [onLoading, setOnLoading] = useState(false);
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+
+  useEffect(() => {
+    console.log("page loaded");
+    onLoadWalletCheck();
+  }, []);
+
+  useEffect(() => {
+    getTokenBalance();
+  }, [userAddress]);
+
+  const onLoadWalletCheck = async () => {
+    await currentWallet();
+  };
+
+  const currentWallet = async () => {
+    const check = await window.ethereum.request({
+      method: "eth_accounts",
+    });
+
+    let address;
+
+    if (check.length > 0) {
+      address = check[0];
+      setUserAddress(address);
+    } else {
+      connectWallet();
+    }
+  };
+
+  const connectWallet = async () => {
+    if (window.ethereum == null) {
+      console.warn("MetaMask no installed");
+      const getProvider = ethers.getDefaultProvider();
+      setProvider(getProvider);
+    } else {
+      const getProvider = new ethers.BrowserProvider(window.ethereum);
+      setProvider(getProvider);
+      // const getAddress = await getProvider.send("eth_requestAccounts", []);
+      const getSigner = await getProvider.getSigner();
+
+      Promise.resolve(getSigner).then((values) => {
+        setSigner(values);
+        setUserAddress(values.address);
+      });
+    }
+  };
 
   async function getTokenBalance() {
     const config = {
@@ -82,6 +132,7 @@ function App() {
               </Heading>
               <Input
                 onChange={(e) => setUserAddress(e.target.value)}
+                value={userAddress}
                 color="black"
                 w="30rem"
                 p={4}
@@ -90,8 +141,14 @@ function App() {
               />
             </Flex>
             {!hasQueried && !onLoading ? (
-              <Button variant="subtle" fontSize={20} onClick={getTokenBalance}>
-                Check ERC-20 Token Balances
+              <Button
+                w="15rem"
+                h="auto"
+                variant="subtle"
+                fontSize={20}
+                onClick={getTokenBalance}
+              >
+                <Text textWrap="wrap">Check ERC-20 Token Balances</Text>
               </Button>
             ) : null}
           </Flex>
