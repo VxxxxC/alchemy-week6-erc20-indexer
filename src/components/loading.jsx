@@ -1,4 +1,4 @@
-import { ProgressBar, ProgressRoot } from "./ui/progress";
+import { ProgressBar, ProgressRoot } from "./components/ui/progress";
 
 export default function Loading() {
   return (
