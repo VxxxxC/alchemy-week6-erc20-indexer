@@ -9,12 +9,15 @@ import {
   SimpleGrid,
   Text,
 } from "@chakra-ui/react";
-import { Alchemy, Network, Utils } from "alchemy-sdk";
+import alchemy from "../alchemy.config.js";
+import { Utils } from "alchemy-sdk";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
-import Loading from "./components/loading.jsx";
+import Loading from "./components/loading";
 import { Spinner } from "@chakra-ui/react/spinner";
 import { Separator } from "@chakra-ui/react/separator";
+
+import TokenPrice from "./components/tokenPrice";
 
 function App() {
   const [userAddress, setUserAddress] = useState("");
@@ -27,6 +30,7 @@ function App() {
 
   useEffect(() => {
     console.log("page loaded");
+    console.log(alchemy);
     onLoadWalletCheck();
   }, []);
 
@@ -72,12 +76,6 @@ function App() {
   };
 
   async function getTokenBalance() {
-    const config = {
-      apiKey: "OOtxwJ1E2d0QWoHMFl6-2qh-hMjY0CMq",
-      network: Network.ETH_MAINNET,
-    };
-
-    const alchemy = new Alchemy(config);
     const data = await alchemy.core.getTokenBalances(userAddress);
     setResults(data);
 
@@ -176,6 +174,7 @@ function App() {
                         <Flex flexDir="column" color="white" key={e.id}>
                           <Box>
                             <b>Symbol:</b> ${tokenDataObjects[i].symbol}&nbsp;
+                            <TokenPrice symbol={tokenDataObjects[i].symbol} />
                           </Box>
                           <Box>
                             <b>Balance:</b>&nbsp;
